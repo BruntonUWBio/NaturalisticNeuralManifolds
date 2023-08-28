@@ -60,7 +60,7 @@ def main():
         pca_objects[:] = np.nan
 
         for d, day in enumerate(days_tested):
-            print("Running Manifolds for ", day)
+            print("Running Manifolds for day", day)
             # load in the data for the current day
             exp_params["test_day"] = str(day)
             manifold_ECoG_data = ECoG_Data(exp_params, proj_mat_sp)

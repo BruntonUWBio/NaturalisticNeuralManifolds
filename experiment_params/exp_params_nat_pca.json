@@ -6,6 +6,7 @@
     "ecog_lp": "/data2/users/zsteineh/nm_paper_data/naturalistic_ecog_data/",
     "ecog_roi_proj_lp": "/data2/users/zsteineh/nm_paper_data/naturalistic_ecog_data/elec_and_roi/",
     "null_data_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/naturalistic/final_all_qs_null_data/Q1/",
+    "data_format": "steve_xr",
     "pats_ids_in": [
         "P01",
         "P02",
@@ -33,6 +34,7 @@
     "trim_n_chans": false,
     "rem_bad_chans": true,
     "quadrants": false,
+    "radians": false,
     "rois": true,
     "custom_rois": false,
     "n_evs_per_sbj": 500,

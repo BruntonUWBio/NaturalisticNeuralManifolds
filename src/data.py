@@ -16,7 +16,7 @@ from tqdm import tqdm
 from tensorflow.keras import utils as np_utils
 import sys
 import os
-from src.fold_data import Fold_Data_Container
+# from src.fold_data import Fold_Data_Container
 
 sys.path.append("/home/zsteineh/ECoG_utils/pyEMG/")
 # Code from agamemnonc pyEMG repo
@@ -102,11 +102,12 @@ class ECoG_Data:
         self.n_chans_all = exp_params["n_chans_all"]
         self.feat_dat = exp_params["feature_type"]
         self.dataset = exp_params["dataset"]
+        self.data_format = exp_params["data_format"]
         self.test_day = exp_params["test_day"]
         if self.test_day == "":
             self.test_day = None
-        self.val_percent = exp_params["train_val_test_split"][1]
-        self.test_percent = exp_params["train_val_test_split"][2]
+        self.val_percent = 0
+        self.test_percent = 0
         self.ecog_srate = exp_params["ecog_srate"]
         self.class_or_reg = exp_params["class_or_reg"]
 
@@ -951,96 +952,12 @@ class ECoG_Data:
         rem_bad_chans : whether to remove bad channels from projection step, defined from abnormal SD or IQR across entire day
         """
 
-        uni_sbjs = [
-            "EC01",
-            "EC02",
-            "EC03",
-            "EC04",
-            "EC05",
-            "EC06",
-            "EC07",
-            "EC08",
-            "EC09",
-            "EC10",
-            "EC11",
-            "EC12",
-        ]
-
-        if "subj" in patient_ids[0]:
-            all_sbjs = [
-                "subj_01",
-                "subj_02",
-                "subj_03",
-                "subj_04",
-                "subj_05",
-                "subj_06",
-                "subj_07",
-                "subj_08",
-                "subj_09",
-                "subj_10",
-                "subj_11",
-                "subj_12",
-            ]
-        elif "E01" in patient_ids[0]:
-            all_sbjs = ['E01', 'E02', 'E03', 'E04', 'E05']
-        elif "EC" in patient_ids[0]:
-            all_sbjs = [
-                "EC01",
-                "EC02",
-                "EC03",
-                "EC04",
-                "EC05",
-                "EC06",
-                "EC07",
-                "EC08",
-                "EC09",
-                "EC10",
-                "EC11",
-                "EC12",
-            ]
-        elif "S" in patient_ids[0]:
-            all_sbjs = ["S01", "S02", "S03", "S04", "S05", "S07", "S08", "S09"]
-        else:
-            all_sbjs = [
-                "a0f66459",
-                "c95c1e82",
-                "cb46fd46",
-                "fcb01f7a",
-                "ffb52f92",
-                "b4ac1726",
-                "f3b79359",
-                "ec761078",
-                "f0bbc9a9",
-                "abdb496b",
-                "ec168864",
-                "b45e3f7b",
-            ]
+        all_sbjs = patient_ids
 
         # Find good ROIs first
         df_all = []
         df_centroids = []
-        sbj_names_dict = {sbj: uni_sbjs[s] for s, sbj in enumerate(all_sbjs)}
-
-        # sbj_names_dict = {
-        #     "a0f66459": "EC01",
-        #     "c95c1e82": "EC02",
-        #     "cb46fd46": "EC03",
-        #     "fcb01f7a": "EC04",
-        #     "ffb52f92": "EC05",
-        #     "b4ac1726": "EC06",
-        #     "f3b79359": "EC07",
-        #     "ec761078": "EC08",
-        #     "f0bbc9a9": "EC09",
-        #     "abdb496b": "EC10",
-        #     "ec168864": "EC11",
-        #     "b45e3f7b": "EC12",
-        # }
-
         for s, patient in enumerate(all_sbjs):
-            if (
-                "EC" not in patient and "S" not in patient and "E" not in patient
-            ):  # and ("subj" not in patient)
-                patient = sbj_names_dict[patient]
             df = pd.read_csv(
                 roi_proj_loadpath + atlas + "_" + patient + "_elecs2ROI.csv"
             )
@@ -1660,28 +1577,29 @@ class ECoG_Data:
             "subj_11",
             "subj_12",
         ]
-        # sbj_map = {pats_ids_in[i]: regr_sbjs[i] for i in range(len(pats_ids_in))}
-        sbj_map = {
-            "EC01": "subj_01",
-            "EC02": "subj_02",
-            "EC03": "subj_03",
-            "EC04": "subj_04",
-            "EC05": "subj_05",
-            "EC06": "subj_06",
-            "EC07": "subj_07",
-            "EC08": "subj_08",
-            "EC09": "subj_09",
-            "EC10": "subj_10",
-            "EC11": "subj_11",
-            "EC12": "subj_12",
-        }
+        sbj_map = {pats_ids_in[i]: regr_sbjs[i]
+                   for i in range(len(pats_ids_in))}
+        # sbj_map = {
+        #     "EC01": "subj_01",
+        #     "EC02": "subj_02",
+        #     "EC03": "subj_03",
+        #     "EC04": "subj_04",
+        #     "EC05": "subj_05",
+        #     "EC06": "subj_06",
+        #     "EC07": "subj_07",
+        #     "EC08": "subj_08",
+        #     "EC09": "subj_09",
+        #     "EC10": "subj_10",
+        #     "EC11": "subj_11",
+        #     "EC12": "subj_12",
+        # }
 
         # Gather each subjects data, and concatenate all days
         for j in tqdm(range(len(pats_ids_in))):
             pat_curr = pats_ids_in[j]
 
             # ZSH: load in ecog data and metatdata for current sbj
-            if "stepeter" in lp:
+            if "steve_xr" in self.data_format:
                 print("loading steve data")
                 (
                     ep_data_in,
@@ -1689,7 +1607,7 @@ class ECoG_Data:
                     time_inds,
                     n_ecog_chans,
                 ) = self.load_steve_ecog(
-                    lp, pat_curr, exp_params["tlim"], feat_dat, sbj_map
+                    lp, pat_curr, exp_params["tlim"], feat_dat
                 )
                 # print(np.unique(ep_data_in["events"]))
             elif "zeynep" in lp:
@@ -1815,7 +1733,7 @@ class ECoG_Data:
 
         return X_subj, y_subj, X_test_subj, y_test_subj, sbj_order, sbj_order_test
 
-    def load_steve_ecog(self, lp, pat_curr, tlim, feat_dat, sbj_map):
+    def load_steve_ecog(self, lp, pat_curr, tlim, feat_dat):
         # ZSH: what is the datatype of ep_data_in???
         # ZSH: xarray object
         if self.dataset == "pose":
@@ -1827,8 +1745,7 @@ class ECoG_Data:
             # does not contain region metadata
             ep_metadata_in = xr.open_dataset(lp + pat_curr + "_metadata.nc")
         elif feat_dat == "mvr_quads":
-            meta_lp = "/data1/users/stepeter/mvmt_init/regression_data/"
-            pat_curr = sbj_map[pat_curr]
+            meta_lp = lp
             ep_metadata_in = xr.open_dataset(
                 meta_lp + pat_curr + "_metadata.nc")
 
