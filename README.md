@@ -5,8 +5,6 @@ This paper and code explore neural manifolds in naturalistic ECoG data
 Methods heavily influenced by Natraj et al. 2022 
 
 To use this repo:
-
-To use this repo:
 <ol>
     <li> Set up your environment:
         <ul>
@@ -18,8 +16,6 @@ To use this repo:
             <li> You will also need to download these other git repos and pip install them: </li>
                 <ul>
                     <li> For loading in mat files: <a href="https://github.com/skjerns/mat7.3"> https://github.com/skjerns/mat7.3 </a> </li>
-                    <li> For calculating distance metrics: <a href="https://github.com/ahwillia/netrep"> https://github.com/ahwillia/netrep </a> </li>
-                    <li> For calculating dPCA: <a href="https://github.com/machenslab/dPCA"> https://github.com/machenslab/dPCA </a> </li>
                 </ul>
             </li>
         </ul>
