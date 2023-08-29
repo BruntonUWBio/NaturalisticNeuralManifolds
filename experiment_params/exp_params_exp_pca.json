@@ -1,43 +1,32 @@
 {
-    "comment": "Param file for running PCA pipeline on naturalistic data",
+    "comment": "Param file for running PCA pipeline on experimental data",
     "sp": "/home/zsteineh/research_projects/neural_manifolds/results/",
     "dataset": "nm",
-    "experiment_folder": "/nat_pca/",
-    "ecog_lp": "/data2/users/zsteineh/nm_paper_data/naturalistic_ecog_data/",
-    "ecog_roi_proj_lp": "/data2/users/zsteineh/nm_paper_data/naturalistic_ecog_data/elec_and_roi/",
-    "null_data_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/naturalistic/final_all_qs_null_data/Q1/",
-    "cross_pat_null_pa_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/naturalistic/final_all_qs_null_data/Q4/",
-    "data_format": "steve_xr",
+    "experiment_folder": "/exp_pca/",
+    "ecog_lp": "/data2/users/zsteineh/nm_paper_data/experimental_ecog_data/updated_data/",
+    "ecog_roi_proj_lp": "/data2/users/zsteineh/nm_paper_data/experimental_ecog_data/updated_data/elec_and_roi/",
+    "null_data_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/experimental/final_all_qs_null_data/Q1/",
+    "cross_pat_null_pa_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/experimental/final_all_qs_null_data/Q4/",
+    "data_format": "exp_xr",
     "pats_ids_in": [
-        "P01",
-        "P02",
-        "P03",
-        "P04",
-        "P05",
-        "P06",
-        "P07",
-        "P08",
-        "P09",
-        "P10",
-        "P11",
-        "P12"
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05"
     ],
     "test_day": [
-        "3",
-        "4",
-        "5",
-        "6",
-        "7"
+        "all"
     ],
-    "feature_type": "mvr_quads",
+    "feature_type": "flex_type",
     "half_n_evs_test": "nopad",
     "combined_sbjs": false,
     "trim_n_chans": false,
-    "rem_bad_chans": true,
+    "rem_bad_chans": false,
     "quadrants": false,
     "radians": false,
     "rois": true,
-    "custom_rois": false,
+    "custom_rois": true,
     "n_evs_per_sbj": 500,
     "tlim": [
         -2,
@@ -73,30 +62,30 @@
         ]
     },
     "class_dict": {
-        "0": "rest",
-        "1": "left",
-        "2": "down",
-        "3": "right",
-        "4": "up"
+        "1": "Thumb",
+        "2": "Index",
+        "3": "Middle",
+        "4": "Ring",
+        "5": "Pinky"
     },
     "class_color": {
-        "0": [
+        "1": [
             "purple",
             "Purples"
         ],
-        "1": [
+        "2": [
             "blue",
             "Blues"
         ],
-        "2": [
+        "3": [
             "orange",
             "Oranges"
         ],
-        "3": [
+        "4": [
             "green",
             "Greens"
         ],
-        "4": [
+        "5": [
             "red",
             "Reds"
         ]

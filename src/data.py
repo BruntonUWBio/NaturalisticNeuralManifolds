@@ -2081,6 +2081,10 @@ class ECoG_Data:
             days_train = np.unique(days_all_in)[:-1]
             day_test_curr = np.unique(days_all_in)[-1]
             days_test_inds = np.nonzero(days_all_in == day_test_curr)[0]
+        elif test_day == 'all':
+            days_train = np.unique(days_all_in)
+            test_day_curr = None
+            days_test_inds = []
         elif test_day is None:
             days_train = np.unique(days_all_in)
             test_day_curr = None  # or we will split data by percentages
@@ -2178,6 +2182,9 @@ class ECoG_Data:
         # pull out test day asked for
         if (test_day == "last") or (test_day is not None):
             print("Pulling out " + test_day + " for test day")
+            if test_day == 'all':
+                days_test_inds = np.arange(len(ep_data_in.events))
+
             dat_test = (
                 ep_data_in[
                     dict(

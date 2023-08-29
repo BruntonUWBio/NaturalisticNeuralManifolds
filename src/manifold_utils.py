@@ -1068,59 +1068,67 @@ def get_pa_per_pat(
         principal_angles[:] = np.nan
         for s, s_dim in enumerate(second_dim_lst):
             sbj_freq_pca_manifolds = all_sbjs_pca[f][s]
-            # print(len(sbj_freq_pca_manifolds))
-            m_ind = 0
-            upper_diag_ind = 0
-            for m_a in range(num_classes):
-                for m_b in range(m_a, num_classes):
-                    # means one of the comparisons doesn't have data
-                    if (
-                        type(sbj_freq_pca_manifolds[m_a]) == list
-                        or type(sbj_freq_pca_manifolds[m_b]) == list
-                    ):
-                        # will leave behind nan if no data there
-                        m_ind += 1
-                        if not include_same_same:
-                            if m_a != m_b:
-                                upper_diag_ind += 1
-                        continue
-                    # print(pca_manifolds[f][s][m_a].components_.shape)
-                    if (
-                        sbj_freq_pca_manifolds[m_a] == sbj_freq_pca_manifolds[m_b]
-                        and m_a != m_b
-                    ):
-                        print("WE YU WE YU")
-                        print("the PCA objects are the same")
-                        print("For Freq: ", f_dim)
-                        print("And sbj: ", s_dim)
-                        print("the class inds are: ", m_a, m_b)
-                        input()
-                    a_components = sbj_freq_pca_manifolds[m_a].components_[
-                        0: dim_red_lst[f], :
-                    ]
-                    b_components = sbj_freq_pca_manifolds[m_b].components_[
-                        0: dim_red_lst[f], :
-                    ]
-                    theta_vals, cur_dist = calc_principal_angles(
-                        a_components, b_components
-                    )
-                    # print(np.degrees(theta_vals))
-                    # pdb.set_trace()
-                    grass_dist[f, s, m_ind] = cur_dist
-                    if not include_same_same:
-                        if m_a != m_b:
-                            principal_angles[s, upper_diag_ind, ...] = np.degrees(
-                                theta_vals
-                            )
-                            upper_diag_ind += 1
-                    else:
-                        principal_angles[s, m_ind, ...] = np.degrees(
-                            theta_vals)
-                    m_ind += 1
+            principal_angles[s, ...] = calc_comp_dim_pas(
+                comparing_dim, sbj_freq_pca_manifolds, dim_red_lst[f], include_same_same)
 
         pa_by_freq[f] = principal_angles
 
     return grass_dist, pa_by_freq
+
+
+def calc_comp_dim_pas(comp_dim_lst, pca_manifolds, red_dim, include_same_same=False):
+    n_compare, n_compare_above = get_num_pa_comparisons(comp_dim_lst)
+    if include_same_same:
+        n_compare_above = n_compare
+    n_comp_dim = len(comp_dim_lst)
+    m_ind = 0
+    upper_diag_ind = 0
+    principal_angles = np.empty((n_compare_above, red_dim))
+    principal_angles[:] = np.nan
+    for m_a in range(n_comp_dim):
+        for m_b in range(m_a, n_comp_dim):
+            # means one of the comparisons doesn't have data
+            if (
+                type(pca_manifolds[m_a]) == list
+                or type(pca_manifolds[m_b]) == list
+            ):
+                # will leave behind nan if no data there
+                m_ind += 1
+                if not include_same_same:
+                    if m_a != m_b:
+                        upper_diag_ind += 1
+                continue
+            # print(pca_manifolds[f][s][m_a].components_.shape)
+            if (
+                pca_manifolds[m_a] == pca_manifolds[m_b]
+                and m_a != m_b
+            ):
+                print("WE YU WE YU")
+                print("the PCA objects are the same")
+                print("the class inds are: ", m_a, m_b)
+                input()
+            a_components = pca_manifolds[m_a].components_[
+                0: red_dim, :
+            ]
+            b_components = pca_manifolds[m_b].components_[
+                0: red_dim, :
+            ]
+            theta_vals, cur_dist = calc_principal_angles(
+                a_components, b_components
+            )
+
+            if not include_same_same:
+                if m_a != m_b:
+                    principal_angles[upper_diag_ind, ...] = np.degrees(
+                        theta_vals
+                    )
+                    upper_diag_ind += 1
+            else:
+                principal_angles[m_ind, ...] = np.degrees(
+                    theta_vals)
+            m_ind += 1
+
+    return principal_angles
 
 
 def get_bootstrapped_same_same_pas(
@@ -1222,6 +1230,7 @@ def get_summed_pas_df(
     pats_ids_in: list,
     comparison_list: list,
     pa_by_freq: list,
+    red_dim: int,
     null_data_sbjs_freqs: list = None,
 ) -> pd.DataFrame:
     """
@@ -1253,9 +1262,9 @@ def get_summed_pas_df(
     # real_summed_pas, null_summed_pas = get_summed_pas_real_null(
     #     pa_by_freq, null_data_sbjs_freqs
     # )
-    real_summed_pas = calc_norm_sum_pa(15, pa_by_freq)
+    real_summed_pas = calc_norm_sum_pa(red_dim, pa_by_freq)
     if null_data_sbjs_freqs is not None:
-        null_summed_pas = calc_norm_sum_pa(15, null_data_sbjs_freqs)
+        null_summed_pas = calc_norm_sum_pa(red_dim, null_data_sbjs_freqs)
         null_summed_pas = np.squeeze(null_summed_pas)
         if len(freq_bands) == 1:
             null_summed_pas = np.expand_dims(null_summed_pas, axis=0)
@@ -1301,6 +1310,51 @@ def get_summed_pas_df(
     return summed_pas_df
 
 
+def one_freq_get_summed_pas_df(pa, red_dim, cur_freq, pats_ids_in, days_tested, comparison_list, null_pa=None):
+    real_summed_pas = calc_norm_sum_pa(red_dim, pa)
+    # now put the summed PA data for both real and null data into a dataframe
+    # the dataframe will have the following columns:
+    # 1) frequency band
+    # 2) subject id
+    # 3) Day
+    # 4) Movement Comparison
+    # 5) Summed PA (Neural dissim)
+    summed_pas = []
+    comp_names = get_pa_comparison_names(comparison_list)
+    # for real data
+    for s, cur_sbj in enumerate(pats_ids_in):
+        for d, day in enumerate(days_tested):
+            for c, cur_comp in enumerate(comp_names):
+                summed_pas.append(
+                    [cur_freq, cur_sbj, day, comp_names[c], real_summed_pas[s][d][c]]
+                )
+
+    # for null data
+    if null_pa is not None:
+        null_summed_pas = calc_norm_sum_pa(red_dim, null_pa)
+        null_summed_pas = np.squeeze(null_summed_pas)
+        for s, cur_sbj in enumerate(pats_ids_in):
+            for i, samp in enumerate(null_summed_pas[s]):
+                for c, cur_comp in enumerate(comp_names):
+                    summed_pas.append(
+                        [cur_freq, "Null", "Null", comp_names[c],
+                            null_summed_pas[s][i][c]]
+                    )
+
+    # now make into dataframe
+    summed_pas_df = pd.DataFrame(
+        summed_pas,
+        columns=[
+            "Frequency",
+            "Participant",
+            "Day",
+            "Movement Comparison",
+            "Neural Dissimilarity",
+        ],
+    )
+    return summed_pas_df
+
+
 def calc_norm_sum_pa(red_dim: int, data_pas: list) -> np.ndarray:
     """
     Calculate the sum of the principal angles for each sbj and freq
@@ -1317,6 +1371,7 @@ def calc_norm_sum_pa(red_dim: int, data_pas: list) -> np.ndarray:
     summed_pas : np.array
         (num_sbjs, num_freqs, *maybe num_null_samples*, 1)
     """
+    data_pas = data_pas[..., 0:red_dim]
     summed_pas = calc_sum_pa(data_pas)
 
     # not sure how well this will work across diff freqs with different red_dims
@@ -1426,6 +1481,55 @@ def choose_dimensionality(
     return freq_red_dim
 
 
+def choose_one_freq_dimensionality(
+    class_dict: dict,
+    freq_band: str,
+    pats_ids_in: list,
+    all_sbjs_pca: list,
+    percent_threshold: float = 0.8,
+) -> int:
+    """
+    Choose the dimensionality of the PCA data based on the variance accounted for by each component
+    Asssumes that I want 80% VAF
+    Just does it for one frequency
+    Assumes that the PCA data comes in as (sbj, days, classes)
+    Parameters
+    ----------
+    class_dict : dict
+        Dictionary of the classes
+    freq_bands : dict
+        Dictionary of the frequency bands
+    pats_ids_in : list
+        List of the patient ids
+    all_sbjs_pca : list
+        List of the PCA objects for each freq and sbj
+    percent_threshold : float, optional
+        Percent of variance explained to threshold at, by default 0.8
+    Returns
+    -------
+    freq_red_dim : int
+        the 80% VAF dimensionality for the given frequency
+    """
+
+    pca_manifolds_VAF = extract_explained_var(
+        class_dict, freq_band, pats_ids_in, all_sbjs_pca
+    )
+    # pca_manifolds_VAF shape of (1, num_sbj, num_days, num_mvmts, num_components)
+
+    # get average for the frequency
+    avg_components = np.squeeze(np.nanmean(pca_manifolds_VAF, axis=(3, 2, 1)))
+
+    # now find the dim
+    cum_VAF = 0
+    for j, cur_VAF in enumerate(avg_components):
+        cum_VAF += cur_VAF
+        if cum_VAF >= percent_threshold:
+            freq_red_dim = j + 1
+            return freq_red_dim
+
+    raise ValueError("No cutoff dimensionality found")
+
+
 # HELPER FUNCTIONS FOR PRINCIPAL ANGLES ANALYSIS #
 def calc_principal_angles(
     a_components: np.ndarray, b_components: np.ndarray
@@ -1448,8 +1552,8 @@ def calc_principal_angles(
     # assumes that components come in with shape (red_dim x n_fts)
     a_components = a_components.T
     b_components = b_components.T
-    print(a_components.shape)
-    print(b_components.shape)
+    # print(a_components.shape)
+    # print(b_components.shape)
 
     orth_combined = np.dot(a_components.T, b_components)
     # print(orth_combined.shape)
@@ -1482,14 +1586,15 @@ def calc_sum_pa(data_pas: list) -> np.ndarray:
     # NOTE: can probably just turn this into
     # np.array(data_pas).sum(axis=-1)
     # at some point
-    summed_pas = []
-    for cur_freq in range(len(data_pas)):
-        summed_pas.append([])
-        for cur_sbj in range(len(data_pas[cur_freq])):
-            cur_pas = data_pas[cur_freq][cur_sbj]
-            cur_sum = np.sum(cur_pas, axis=-1)
-            summed_pas[cur_freq].append(cur_sum)
-    return np.array(summed_pas)
+    # summed_pas = []
+    # for cur_freq in range(len(data_pas)):
+    #     summed_pas.append([])
+    #     for cur_sbj in range(len(data_pas[cur_freq])):
+    #         cur_pas = data_pas[cur_freq][cur_sbj]
+    #         cur_sum = np.sum(cur_pas, axis=-1)
+    #         summed_pas[cur_freq].append(cur_sum)
+    # return np.array(summed_pas)
+    return np.array(data_pas).sum(axis=-1)
 
 
 def calc_min_dim(
