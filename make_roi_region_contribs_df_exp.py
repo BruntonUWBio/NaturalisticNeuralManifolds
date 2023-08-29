@@ -30,6 +30,7 @@ class_color = {int(cur_key): val for cur_key, val in class_color.items()}
 
 proj_mat_sp = exp_params["sp"] + \
     exp_params["dataset"] + exp_params["experiment_folder"]
+print(proj_mat_sp)
 
 percent_threshold = 0.8
 pats_ids_in = exp_params["pats_ids_in"]
@@ -86,6 +87,4 @@ for f, freq in enumerate(freq_bands):
                                                            ignore_index=True)
 
 print(roi_contrib_df.head())
-# whoops, I saved in the wrong place
-roi_contrib_df.to_csv(
-    '/home/zsteineh/research_projects/neural_manifolds/results/move_vs_rest/Q4_final/roi_region_contrib_df.csv')
+roi_contrib_df.to_csv(proj_mat_sp + 'roi_region_contrib_df.csv')
