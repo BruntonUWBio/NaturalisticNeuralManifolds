@@ -462,7 +462,7 @@ def concat_trials(split_sbj_eLFO_ECoG_data: list) -> Tuple[list, list, list, int
             np.all(c_data[0, :, :] == concat_data[:, 0: sr_dim[i]])
         ), "trials no longer match for class " + str(i)
         # TODO: turn into check
-        print(concat_ECoG_data[i].shape)
+        # print(concat_ECoG_data[i].shape)
 
     return concat_ECoG_data, trial_dim, sr_dim, chan_dim
 

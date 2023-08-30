@@ -6,6 +6,7 @@
     "ecog_lp": "/data2/users/zsteineh/nm_paper_data/experimental_ecog_data/updated_data/",
     "ecog_roi_proj_lp": "/data2/users/zsteineh/nm_paper_data/experimental_ecog_data/updated_data/elec_and_roi/",
     "null_data_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/experimental/final_all_qs_null_data/Q1/",
+    "cross_days_null_pa_lp": "",
     "cross_pat_null_pa_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/experimental/final_all_qs_null_data/Q4/",
     "data_format": "exp_xr",
     "pats_ids_in": [

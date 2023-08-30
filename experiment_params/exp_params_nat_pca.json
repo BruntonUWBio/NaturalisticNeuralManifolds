@@ -6,6 +6,7 @@
     "ecog_lp": "/data2/users/zsteineh/nm_paper_data/naturalistic_ecog_data/",
     "ecog_roi_proj_lp": "/data2/users/zsteineh/nm_paper_data/naturalistic_ecog_data/elec_and_roi/",
     "null_data_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/naturalistic/final_all_qs_null_data/Q1/",
+    "cross_days_null_pa_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/naturalistic/final_all_qs_null_data/Q3/",
     "cross_pat_null_pa_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/naturalistic/final_all_qs_null_data/Q4/",
     "data_format": "steve_xr",
     "pats_ids_in": [
