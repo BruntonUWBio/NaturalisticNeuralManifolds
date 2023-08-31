@@ -87,10 +87,11 @@ def plot_PAs(ax,
              all_day_pas,
              null_data_pa,
              red_dim,
+             null_sig_pas=None,
+             null_all=False,
              const_label=False,
              color_black=False,
              fill_between=False,
-             null_all=False,
              legend_on=True,
              participant=0,
              frequency=0):
@@ -126,27 +127,23 @@ def plot_PAs(ax,
                 color=colors[c],
             )
 
-    if null_data_pa is not None:
-        null_pa = null_data_pa[frequency, participant, ...]
+    if null_data_pa is not None and null_all:
+        null_pa = np.array(null_data_pa[frequency][participant])
         # turn to shape (1000 runs, comps, manifold dim)
         # this will plot all the null samples for the whole distrubition
-        if null_all:
-            null_pa = np.squeeze(null_pa)
-            for s in range(len(null_pa)):
-                ax.plot(null_pa[s, 6], color="grey", alpha=0.1)
-                if s == 1:
-                    ax.plot(null_pa[s, 6], color="grey", label="Null Samples")
-        else:
-            signf_null_pas = np.squeeze(
-                np.percentile(null_pa, 1, axis=0).mean(axis=2)
-            )
-            ax.plot(signf_null_pas, linestyle="--",
-                    color="black", label="Null 1%")
+        null_pa = np.squeeze(null_pa)
+        for s in range(len(null_pa)):
+            ax.plot(null_pa[s, 6], color="grey", alpha=0.1)
+            if s == 1:
+                ax.plot(null_pa[s, 6], color="grey", label="Null Samples")
+
+    if null_sig_pas is not None:
+        ax.plot(null_sig_pas, linestyle="--", color="black", label="Null 1%")
 
     ax.set_ylim(0, 95)
     ax.set_yticks([30, 60, 90])
-    ax.set_xlabel("Manifold\nDimension")
-    ax.set_ylabel("Principal\nAngle (deg)")
+    ax.set_xlabel("Manifold Dimension")
+    ax.set_ylabel("Principal Angle (deg)")
     # ax.set_xticks([0, 4, 9, 14])
     # ax.set_xticklabels([1, 5, 10, 15])
     ax.set_xlim([0, red_dim])
