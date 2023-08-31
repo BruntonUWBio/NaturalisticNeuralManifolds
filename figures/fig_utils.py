@@ -87,6 +87,11 @@ def plot_PAs(ax,
              all_day_pas,
              null_data_pa,
              red_dim,
+             const_label=False,
+             color_black=False,
+             fill_between=False,
+             null_all=False,
+             legend_on=True,
              participant=0,
              frequency=0):
     # assume all_days_pas is of shape (days, freqs, pats, mvmts comparisons, manifold dim)
@@ -103,31 +108,40 @@ def plot_PAs(ax,
             frequency, participant, comp, ...]
         theta_std = np.nanstd(all_day_pas, axis=0)[
             frequency, participant, comp, ...]
-        cur_label = 'Movement Comparison'
-        ax.plot(theta_vals, label=cur_label, color='black')
-        # c += 1
-        # upper_diag_ind += 1
-        # ax.fill_between(np.arange(len(theta_vals)),
-        #                 theta_vals,
-        #                 np.zeros(len(theta_vals)),
-        #                 alpha=0.2,
-        #                 color='black')
-        # gradient_fill(np.arange(len(theta_vals)), theta_vals, ax=ax, fill_color='pink', color='black')
+        if const_label:
+            cur_label = 'Movement Comparison'
+        else:
+            cur_label = class_vs_dict[comp]
+        if color_black:
+            color = "black"
+        else:
+            color = colors[c]
+        ax.plot(theta_vals, label=cur_label, color=color)
+        if fill_between:
+            ax.fill_between(
+                np.arange(len(theta_vals)),
+                theta_vals - theta_std,
+                theta_vals + theta_std,
+                alpha=0.3,
+                color=colors[c],
+            )
 
     if null_data_pa is not None:
         null_pa = null_data_pa[frequency, participant, ...]
-        # print(null_pa.shape)
-        # signf_null_pas = np.squeeze(
-        #     np.percentile(null_pa, 1, axis=0).mean(axis=2)
-        # )
-        # ax.plot(signf_null_pas, linestyle="--", color="black", label="Null 1%")
-
         # turn to shape (1000 runs, comps, manifold dim)
-        null_pa = np.squeeze(null_pa)
-        for s in range(len(null_pa)):
-            ax.plot(null_pa[s, 6], color="grey", alpha=0.1)
-            if s == 1:
-                ax.plot(null_pa[s, 6], color="grey", label="Null Samples")
+        # this will plot all the null samples for the whole distrubition
+        if null_all:
+            null_pa = np.squeeze(null_pa)
+            for s in range(len(null_pa)):
+                ax.plot(null_pa[s, 6], color="grey", alpha=0.1)
+                if s == 1:
+                    ax.plot(null_pa[s, 6], color="grey", label="Null Samples")
+        else:
+            signf_null_pas = np.squeeze(
+                np.percentile(null_pa, 1, axis=0).mean(axis=2)
+            )
+            ax.plot(signf_null_pas, linestyle="--",
+                    color="black", label="Null 1%")
 
     ax.set_ylim(0, 95)
     ax.set_yticks([30, 60, 90])
@@ -136,7 +150,8 @@ def plot_PAs(ax,
     # ax.set_xticks([0, 4, 9, 14])
     # ax.set_xticklabels([1, 5, 10, 15])
     ax.set_xlim([0, red_dim])
-    # ax.legend(loc="center", frameon=True)
+    if legend_on:
+        ax.legend(loc="center", frameon=True)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
@@ -162,6 +177,7 @@ def plot_neural_dissimilarity(ax,
     ax.spines["right"].set_visible(False)
     ax.set_xticklabels(labels=order, rotation=45)
     ax.set_ylim([-0.05, 1])
+    ax.set_yticks([0, 0.5, 1])
     ax.hlines(
         sigf_val, -0.5, len(order), linestyles="dashed", color="black"
     )
@@ -216,3 +232,43 @@ def plot_electrodes(ax,
     # format sbj_num to include leading 0
     # print_num = "%02d" % (sbj_num + 1)
     ax.set_title(f"{data_type}{sbj_num + 1:02d}{suff}", fontsize=24)
+
+
+def plot_roi_contribs(ax,
+                      first_component,
+                      df_elec_pos,
+                      side_2_display="l",
+                      node_size=50,
+                      alpha=1,
+                      edgecolors="silver",
+                      linewidths=0.5,
+                      marker="o",
+                      colorbar=True,
+                      node_vmax=None,
+                      node_vmin=None,):
+    component_dim = first_component.shape[0]
+    df_dim = len(df_elec_pos[["X coor", "Y coor", "Z coor"]])
+
+    if component_dim != df_dim:
+        print("not matching dimensions!")
+        return
+    else:
+        elec_pos = df_elec_pos[["X coor", "Y coor", "Z coor"]][
+            0: first_component.shape[0]
+        ]
+    ni_plt.plot_markers(
+        node_values=abs(first_component),
+        node_coords=elec_pos,
+        node_size=node_size,
+        display_mode=side_2_display,
+        axes=ax,
+        node_kwargs={
+            "alpha": alpha,
+            "edgecolors": edgecolors,
+            "linewidths": linewidths,
+            "marker": marker,
+        },
+        node_vmax=node_vmax,
+        node_vmin=node_vmin,
+        colorbar=colorbar,
+    )
