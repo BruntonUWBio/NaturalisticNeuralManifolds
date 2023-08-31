@@ -22,7 +22,7 @@ import os
 import pdb
 from functools import reduce
 
-from src.data import ECoG_Data
+from src.data_utils import ECoG_Data
 
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d

@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from nilearn import plotting as ni_plt
 
-from src.data import ECoG_Data
-import src.manifold_utils as mu
+from src.data_utils import ECoG_Data
+import src.manifold_u as mu
 
 filepath = '/home/zsteineh/research_projects/NaturalisticNeuralManifolds/experiment_params/'
 file_name = 'exp_params_nat_pca.json'

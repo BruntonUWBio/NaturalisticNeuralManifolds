@@ -1,0 +1,77 @@
+{
+    "comment": "Params for getting exp pose data",
+    "sp": "/home/zsteineh/research_projects/neural_manifolds/results/nm/",
+    "dataset": "pose",
+    "experiment_folder": "/exp_move_correl/",
+    "ecog_lp": "/data2/users/zsteineh/nm_paper_data/experimental_ecog_data/updated_data/pose/",
+    "ecog_roi_proj_lp": "/data2/users/zsteineh/nm_paper_data/experimental_ecog_data/updated_data/elec_and_roi/",
+    "null_data_lp": "/data2/users/zsteineh/nm_paper_data/tme_null_data/experimental/final_all_qs_null_data/",
+    "data_format": "pose",
+    "pats_ids_in": [
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05"
+    ],
+    "test_day": [
+        "all"
+    ],
+    "train_val_test_split": [
+        0,
+        0,
+        0
+    ],
+    "feature_type": "exp_pose",
+    "half_n_evs_test": "nopad",
+    "combined_sbjs": false,
+    "trim_n_chans": false,
+    "rem_bad_chans": false,
+    "quadrants": false,
+    "radians": false,
+    "rois": false,
+    "custom_rois": false,
+    "n_evs_per_sbj": 500,
+    "tlim": [
+        -2,
+        2
+    ],
+    "n_chans_all": 5,
+    "dipole_dens_thresh": 0.2,
+    "ecog_srate": 250.0,
+    "freq_bands": {
+        "pose": [
+            0
+        ]
+    },
+    "class_dict": {
+        "1": "Thumb",
+        "2": "Index",
+        "3": "Middle",
+        "4": "Ring",
+        "5": "Pinky"
+    },
+    "class_color": {
+        "0": [
+            "purple",
+            "Purples"
+        ],
+        "1": [
+            "blue",
+            "Blues"
+        ],
+        "2": [
+            "orange",
+            "Oranges"
+        ],
+        "3": [
+            "green",
+            "Greens"
+        ],
+        "4": [
+            "red",
+            "Reds"
+        ]
+    },
+    "class_or_reg": "class"
+}

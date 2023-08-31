@@ -5,13 +5,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from optht import optht
 
-import json, pickle
+import json
+import pickle
 from tqdm import tqdm
-import sys, os, pdb
+import sys
+import os
+import pdb
 
-from src.data import ECoG_Data
+from src.data_utils import ECoG_Data
 from src.fold_data import Fold_Data_Container
-import src.manifold_utils as mu
+import src.manifold_u as mu
 import src.TME.TME_utils as tu
 
 
@@ -53,7 +56,8 @@ def get_null_data_sbjs_cross_days(
             null_data_sbjs_freqs[f].append([])
             for m, mvmt in enumerate(class_dict):
                 sbj_sp = proj_mat_sp + pat_id_curr + "/"
-                cur_null_sp = null_data_sp + pat_id_curr + "/" + class_dict[mvmt] + "/"
+                cur_null_sp = null_data_sp + pat_id_curr + \
+                    "/" + class_dict[mvmt] + "/"
                 null_data = mu.load_null_data(cur_null_sp, freq_name)
                 # reshape null data to match expected shape
                 # (num_samples, sr_dim, num_days, chans)
@@ -81,7 +85,8 @@ def main():
     try:
         json_filename = sys.argv[1]
     except IndexError:
-        raise SystemExit(f"Usage: {sys.argv[0]} <json file of experiment parameters>")
+        raise SystemExit(
+            f"Usage: {sys.argv[0]} <json file of experiment parameters>")
     with open(json_filename) as f:
         exp_params = json.load(f)
 
@@ -94,7 +99,8 @@ def main():
     days_tested = exp_params["test_day"]
 
     proj_mat_sp = (
-        exp_params["sp"] + exp_params["dataset"] + exp_params["experiment_folder"]
+        exp_params["sp"] + exp_params["dataset"] +
+        exp_params["experiment_folder"]
     )
     if not os.path.exists(proj_mat_sp):
         os.makedirs(proj_mat_sp)
@@ -249,7 +255,8 @@ def main():
                 if type(cur_ecog_data) == list:
                     # skip if it is a list, because that means there was no data for that condition
                     continue
-                pat_day_data_lst.append(cur_mvt_data["Average ECoG Data"].values[0])
+                pat_day_data_lst.append(
+                    cur_mvt_data["Average ECoG Data"].values[0])
             pat_day_data = np.array(pat_day_data_lst)
             print("data needs to be in shape (n_timepoints, n_channels, n_mvmts)")
             pat_day_data = np.swapaxes(np.swapaxes(pat_day_data, 0, 1), 1, 2)
@@ -369,7 +376,8 @@ def main():
     # convert the last day, with data, for each sbj to a different label
     for s, pat_id_curr in enumerate(pats_ids_in):
         # first, figure out their last day
-        pat_id_df = all_data_df.loc[(all_data_df["Participant"] == pat_id_curr)]
+        pat_id_df = all_data_df.loc[(
+            all_data_df["Participant"] == pat_id_curr)]
         pat_last_day = pat_id_df["Day"].max()
         while (
             pat_id_df.loc[pat_id_df["Day"] == pat_last_day]["Average ECoG Data"].values[
@@ -405,12 +413,14 @@ def main():
             # now pull the data out and add to a list
             pat_day_data_lst = []
             for s, pat_id_curr in enumerate(pats_ids_in):
-                cur_mvt_data = pat_id_df.loc[pat_id_df["Participant"] == pat_id_curr]
+                cur_mvt_data = pat_id_df.loc[pat_id_df["Participant"]
+                                             == pat_id_curr]
                 cur_ecog_data = cur_mvt_data["Average ECoG Data"].values[0]
                 if type(cur_ecog_data) == list:
                     # skip if it is a list, because that means there was no data for that condition
                     continue
-                pat_day_data_lst.append(cur_mvt_data["Average ECoG Data"].values[0])
+                pat_day_data_lst.append(
+                    cur_mvt_data["Average ECoG Data"].values[0])
             pat_day_data = np.array(pat_day_data_lst)
             print("data needs to be in shape (n_timepoints, n_channels, n_sbjs)")
             pat_day_data = np.swapaxes(np.swapaxes(pat_day_data, 0, 1), 1, 2)

@@ -8,7 +8,7 @@ import sys
 import os
 import pdb
 
-import src.manifold_utils as mu
+import src.manifold_u as mu
 
 
 def cross_movement_comps(pats_ids_in,

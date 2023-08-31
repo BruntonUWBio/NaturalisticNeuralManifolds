@@ -7,8 +7,8 @@ import sys
 import os
 import pdb
 
-from src.data import ECoG_Data
-import src.manifold_utils as mu
+from src.data_utils import ECoG_Data
+import src.manifold_u as mu
 
 
 def main():

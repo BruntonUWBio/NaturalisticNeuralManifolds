@@ -1,0 +1,78 @@
+{
+    "comment": "Params for getting naturalistic pose data",
+    "sp": "/home/zsteineh/research_projects/neural_manifolds/results/nm/",
+    "dataset": "pose",
+    "experiment_folder": "/nat_move_correl/",
+    "ecog_lp": "/data2/users/zsteineh/nm_paper_data/naturalistic_ecog_data/pose/",
+    "ecog_roi_proj_lp": "/data2/users/zsteineh/nm_paper_data/naturalistic_ecog_data/elec_and_roi/",
+    "data_format": "pose",
+    "pats_ids_in": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12"
+    ],
+    "test_day": [
+        "last"
+    ],
+    "feature_type": "mvr_quads",
+    "half_n_evs_test": "nopad",
+    "event_types": [
+        "rest",
+        "move"
+    ],
+    "combined_sbjs": false,
+    "trim_n_chans": false,
+    "rem_bad_chans": false,
+    "quadrants": false,
+    "radians": false,
+    "rois": false,
+    "custom_rois": false,
+    "n_evs_per_sbj": 500,
+    "tlim": [
+        -2,
+        2
+    ],
+    "n_chans_all": 18,
+    "dipole_dens_thresh": 0.2,
+    "ecog_srate": 30,
+    "freq_bands": {
+        "pose": [
+            0
+        ]
+    },
+    "class_dict": {
+        "0": "pose"
+    },
+    "class_color": {
+        "0": [
+            "purple",
+            "Purples"
+        ],
+        "1": [
+            "blue",
+            "Blues"
+        ],
+        "2": [
+            "orange",
+            "Oranges"
+        ],
+        "3": [
+            "green",
+            "Greens"
+        ],
+        "4": [
+            "red",
+            "Reds"
+        ]
+    },
+    "class_or_reg": "class"
+}

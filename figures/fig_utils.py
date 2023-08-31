@@ -5,6 +5,9 @@ import seaborn as sns
 from brokenaxes import brokenaxes
 from matplotlib.gridspec import GridSpec
 import matplotlib as mpl
+from nilearn import plotting as ni_plt
+
+import src.manifold_u as mu
 
 
 def subplot_VAF(avg_components,
@@ -78,6 +81,66 @@ def subplot_VAF(avg_components,
     # bax.set_title(var_of_interest_name + " VAF", loc = 'left', y = 0.99)
 
 
+def plot_PAs(ax,
+             class_dict,
+             comps_to_plot,
+             all_day_pas,
+             null_data_pa,
+             red_dim,
+             participant=0,
+             frequency=0):
+    # assume all_days_pas is of shape (days, freqs, pats, mvmts comparisons, manifold dim)
+    # assume null_data_pa is of shape (freqs, pats, reruns, 1, 1, mvmts comparisons, manifold dim)
+    class_vs_dict = mu.get_pa_comparison_names(class_dict)
+    evenly_spaced_interval = np.linspace(0, 1, len(comps_to_plot))
+    # may want a better cm later
+    colors = [plt.cm.cool(x) for x in evenly_spaced_interval]
+    # upper_diag_ind = 0
+    # c = 0
+    for c, comp in enumerate(comps_to_plot):
+        # gets the average over the days
+        theta_vals = np.nanmean(all_day_pas, axis=0)[
+            frequency, participant, comp, ...]
+        theta_std = np.nanstd(all_day_pas, axis=0)[
+            frequency, participant, comp, ...]
+        cur_label = 'Movement Comparison'
+        ax.plot(theta_vals, label=cur_label, color='black')
+        # c += 1
+        # upper_diag_ind += 1
+        # ax.fill_between(np.arange(len(theta_vals)),
+        #                 theta_vals,
+        #                 np.zeros(len(theta_vals)),
+        #                 alpha=0.2,
+        #                 color='black')
+        # gradient_fill(np.arange(len(theta_vals)), theta_vals, ax=ax, fill_color='pink', color='black')
+
+    if null_data_pa is not None:
+        null_pa = null_data_pa[frequency, participant, ...]
+        # print(null_pa.shape)
+        # signf_null_pas = np.squeeze(
+        #     np.percentile(null_pa, 1, axis=0).mean(axis=2)
+        # )
+        # ax.plot(signf_null_pas, linestyle="--", color="black", label="Null 1%")
+
+        # turn to shape (1000 runs, comps, manifold dim)
+        null_pa = np.squeeze(null_pa)
+        for s in range(len(null_pa)):
+            ax.plot(null_pa[s, 6], color="grey", alpha=0.1)
+            if s == 1:
+                ax.plot(null_pa[s, 6], color="grey", label="Null Samples")
+
+    ax.set_ylim(0, 95)
+    ax.set_yticks([30, 60, 90])
+    ax.set_xlabel("Manifold\nDimension")
+    ax.set_ylabel("Principal\nAngle (deg)")
+    # ax.set_xticks([0, 4, 9, 14])
+    # ax.set_xticklabels([1, 5, 10, 15])
+    ax.set_xlim([0, red_dim])
+    # ax.legend(loc="center", frameon=True)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+
 def plot_neural_dissimilarity(ax,
                               neur_dis_df,
                               sigf_val,
@@ -106,3 +169,50 @@ def plot_neural_dissimilarity(ax,
         im_ax = ax.inset_axes([0.7, 0.7, 0.47, 0.47])
         im_ax.imshow(var_of_interest_icon)
         im_ax.axis('off')
+
+
+def plot_electrodes(ax,
+                    df_elec_pos,
+                    sbj_num,
+                    electrode_color,
+                    data_type='N',
+                    side_2_display="x",
+                    node_size=50,
+                    alpha=1,
+                    edgecolors="silver",
+                    node_cmap="Greys",
+                    linewidths=0.5,
+                    marker="o",
+                    colorbar=True,
+                    node_vmax=None,
+                    node_vmin=None,):
+    # Include asterisk for RH patients
+    average_xpos_sign = np.mean(np.asarray(df_elec_pos['X coor']))
+    if average_xpos_sign > 0:
+        suff = '*'
+    else:
+        suff = ''
+
+    df_dim = len(df_elec_pos[["X coor", "Y coor", "Z coor"]])
+    elec_pos = df_elec_pos[["X coor", "Y coor", "Z coor"]]
+    ni_plt.plot_markers(
+        node_values=electrode_color,
+        node_coords=elec_pos,
+        node_size=node_size,
+        display_mode=side_2_display,
+        axes=ax,
+        node_kwargs={
+            "alpha": alpha,
+            "edgecolors": edgecolors,
+            "linewidths": linewidths,
+            "marker": marker,
+        },
+        node_cmap=node_cmap,
+        node_vmax=node_vmax,
+        node_vmin=node_vmin,
+        colorbar=colorbar,
+        # node_cmap="binary_r"
+    )
+    # format sbj_num to include leading 0
+    # print_num = "%02d" % (sbj_num + 1)
+    ax.set_title(f"{data_type}{sbj_num + 1:02d}{suff}", fontsize=24)
