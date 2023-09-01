@@ -148,7 +148,7 @@ def plot_PAs(ax,
                 ax.plot(null_pa[s, 6], color="grey", label="Null Samples")
 
     if null_sig_pas is not None:
-        ax.plot(null_sig_pas, linestyle="--", color="black", label="Null 1%")
+        ax.plot(null_sig_pas, linestyle="--", color="black", label="Null 1\%")
 
     ax.set_ylim(0, 95)
     ax.set_yticks([30, 60, 90])
