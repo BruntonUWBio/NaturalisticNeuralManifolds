@@ -89,6 +89,7 @@ def plot_PAs(ax,
              red_dim,
              null_sig_pas=None,
              null_all=False,
+             cross_pat=False,
              const_label=False,
              color_black=False,
              fill_between=False,
@@ -97,18 +98,27 @@ def plot_PAs(ax,
              frequency=0):
     # assume all_days_pas is of shape (days, freqs, pats, mvmts comparisons, manifold dim)
     # assume null_data_pa is of shape (freqs, pats, reruns, 1, 1, mvmts comparisons, manifold dim)
-    class_vs_dict = mu.get_pa_comparison_names(class_dict)
+    if cross_pat:
+        class_vs_dict = class_dict
+    else:
+        class_vs_dict = mu.get_pa_comparison_names(class_dict)
     evenly_spaced_interval = np.linspace(0, 1, len(comps_to_plot))
     # may want a better cm later
     colors = [plt.cm.cool(x) for x in evenly_spaced_interval]
     # upper_diag_ind = 0
     # c = 0
     for c, comp in enumerate(comps_to_plot):
-        # gets the average over the days
-        theta_vals = np.nanmean(all_day_pas, axis=0)[
-            frequency, participant, comp, ...]
-        theta_std = np.nanstd(all_day_pas, axis=0)[
-            frequency, participant, comp, ...]
+        if cross_pat:
+            # gets the average over the days and movements
+            theta_vals = np.nanmean(all_day_pas[frequency], axis=0)[comp, ...]
+            theta_std = np.nanstd(all_day_pas[frequency], axis=0)[comp, ...]
+        else:
+            # gets the average over the days
+            theta_vals = np.nanmean(all_day_pas, axis=0)[
+                frequency, participant, comp, ...]
+            theta_std = np.nanstd(all_day_pas, axis=0)[
+                frequency, participant, comp, ...]
+
         if const_label:
             cur_label = 'Movement Comparison'
         else:
@@ -149,6 +159,8 @@ def plot_PAs(ax,
     ax.set_xlim([0, red_dim])
     if legend_on:
         ax.legend(loc="center", frameon=True)
+        if cross_pat:
+            ax.legend(bbox_to_anchor=(2.3, -0.50), frameon=True, ncol=3)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
