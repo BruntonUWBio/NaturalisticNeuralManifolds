@@ -43,7 +43,7 @@ roi_regions = pd.read_csv(
 print(roi_regions.head())
 
 
-# freq_bands = ['LFO']
+freq_bands = ['Beta']
 roi_contrib_df = pd.DataFrame(columns=['Frequency',
                                        'Participant',
                                        'Day',
