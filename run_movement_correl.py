@@ -730,7 +730,7 @@ def main(pose_exp_params, ecog_exp_params):
                                      freq_dim)
         pa_df = pa_df.rename(
             columns={'Frequency': 'Participant', 'Participant': 'Bootstrap Iteration'})
-        pa_df['Frequency'] = ['LFO' for i in range(len(pa_df))]
+        pa_df['Frequency'] = [freq_name for i in range(len(pa_df))]
         pa_df['Pose Distance'] = np.array(all_bootstrap_metric_avg).flatten()
         pa_df['Pose Distance Std'] = np.array(
             all_bootstrap_metric_std).flatten()
