@@ -63,7 +63,7 @@ def subplot_VAF(avg_components,
     bax.set_ylim([0, 1.05])
     bax.axhline(percent_threshold, c="k", linestyle="--")
     if x_label:
-        bax.set_xlabel("Number of PCs", labelpad=-20)
+        bax.set_xlabel("Number of PCs")  # , labelpad=-20)
     if y_label:
         bax.set_ylabel("Neural Variance\nAccounted For (\%)")
     if len(var_of_interest) > 9:
