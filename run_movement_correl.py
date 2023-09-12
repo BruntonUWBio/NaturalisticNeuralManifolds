@@ -212,7 +212,7 @@ def plot_pose_vs_neural_metric(
     plot_by_freq(ecog_pose_df, freq_bands,
                  pose_exp_params, metric_name, pose_combo)
     plot_by_pat(ecog_pose_df, pats_ids_in,
-                pose_exp_params, metric_name, pose_combo)
+                pose_exp_params, metric_name, pose_combo, cur_freq=freq_bands[0])
     plt.close()
 
 
@@ -737,7 +737,7 @@ def main(pose_exp_params, ecog_exp_params):
         print("making plots")
         print(pa_df.head())
         plot_pose_vs_neural_metric(
-            pa_df, ['LFO'], pats_ids_in, pose_exp_params, str(metric), subset)
+            pa_df, [freq_name], pats_ids_in, pose_exp_params, str(metric), subset)
 
         # save the dataframe
         print("saving to ", pose_proj_mat_sp)
