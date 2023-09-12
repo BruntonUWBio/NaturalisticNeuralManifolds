@@ -480,16 +480,31 @@ def normalize_data(concat_ECoG_data: list) -> list:
         List of (n_trials * n_time, n_channels) for each class, normalized
     """
     # really just needs to have visual inspection for data
+
+    # this is stupid and won't work
+    # norm_concat_ECoG_data = []
+    # for i, data in enumerate(concat_ECoG_data):
+    #     if len(data) == 0:
+    #         norm_concat_ECoG_data.append([])
+    #         continue
+    #     # norm_concat_ECoG_data.append(stats.zscore(data))
+
+    #     norm_concat_ECoG_data.append(stats.zscore(data, axis=-1))
+    #     assert norm_concat_ECoG_data[i].shape == data.shape
+    #     # print(norm_concat_ECoG_data[i].shape)
+    #     # print(data.shape)
+
+    from sklearn.preprocessing import StandardScaler
+    std_scaler = StandardScaler()
+
     norm_concat_ECoG_data = []
     for i, data in enumerate(concat_ECoG_data):
         if len(data) == 0:
             norm_concat_ECoG_data.append([])
             continue
-        # norm_concat_ECoG_data.append(stats.zscore(data))
-        norm_concat_ECoG_data.append(stats.zscore(data, axis=-1))
-        assert norm_concat_ECoG_data[i].shape == data.shape
-        # print(norm_concat_ECoG_data[i].shape)
-        # print(data.shape)
+        std_data = std_scaler.fit_transform(data)
+        norm_concat_ECoG_data.append(std_data)
+        assert norm_concat_ECoG_data[i].shape == std_data.shape
 
     return norm_concat_ECoG_data
 
