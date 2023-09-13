@@ -90,7 +90,7 @@ def main():
                         )
                     )
 
-                # This creates the data for each participant and day
+                # This creates the data for current pat and day
                 (
                     cur_classes,
                     trial_dim,
@@ -106,6 +106,7 @@ def main():
                     manifold_ECoG_data,
                 )
 
+                # run PCA on the data
                 class_pca, reduced_class_ECoG_data = mu.calc_class_pca(
                     trial_dim,
                     sr_dim,
@@ -114,10 +115,12 @@ def main():
                     freq_band,
                     norm_concat_ECoG_data,
                 )
+
                 if class_pca == []:
                     for l in range(len(class_dict)):
                         pca_objects[p, d, l] = []
                     continue
+
                 mu.make_pca_plots(
                     sbj_sp,
                     p,
@@ -131,27 +134,10 @@ def main():
                     class_pca,
                     reduced_class_ECoG_data,
                 )
-
                 pca_objects[p, d, :] = np.array(class_pca)
 
         # save the pca objects for each freq band
         np.save(proj_mat_sp + freq_band + "_pca_objects.npy", pca_objects)
-
-        # # need to have the last dim the days dimension
-        # pca_objects = pca_objects.transpose((0, 2, 1))
-        # # now that we have all the pca info for this freq band,
-        # # we can do the principal angles analysis
-        # print(pca_objects.shape)
-        # print(pca_objects)
-
-        # red_dim = [15 for i in pats_ids_in]
-        # dist, pa = mu.get_pa_per_pat(
-        #     pats_ids_in, class_dict, days_tested, red_dim, pca_objects
-        # )
-        # print("size of prinicpal angles is:")
-        # print(np.array(pa).shape)
-
-        # np.save(proj_mat_sp + freq_band + "_pa_per_pat_per_day.npy", pa)
 
 
 if __name__ == "__main__":

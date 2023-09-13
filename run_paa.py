@@ -20,22 +20,50 @@ def cross_movement_comps(pats_ids_in,
                          freq_null_data_pa,
                          freq_cross_move_pas,
                          freq_cross_move_nd_df):
+    """
+    This function calculates the principal angles and also the neural dissimilarity
+    between different movement types in the same participant
+    Adds the principal angles to the freq_cross_move_pas dictionary
+    and the neural dissimilarity info to the freq_cross_move_nd_df dataframe
+
+    Args:
+        pats_ids_in (list): list of participant ids
+        days_tested (list): list of the days in the dataset
+        class_dict (dict): dictionary mapping movement names to movement numbers
+        all_sbjs_pca (np.ndarray): numpy array containing the PCA objects for all data dims
+        freq_red_dim (int): cutoff dimensionality for PCA
+        freq_band (str): name of the current frequency band
+        freq_null_data_pa (np.ndarray): array containing all the principal angles between null data PCA spaces
+        freq_cross_move_pas (dict): dict which holds the principal angles for all freq bands, key is the freq band
+        freq_cross_move_nd_df (pd.DataFrame): Dataframe containing the neural dissimilarity info for all freq bands
+            contains the following columns:
+            # 1) frequency band
+            # 2) subject id
+            # 3) Day
+            # 4) Movement Comparison
+            # 5) Normalized Summed PA (Neural dissim)
+
+    Returns:
+        dict: the updated freq_cross_move_pas
+        pd.DataFrame: the updated freq_cross_move_nd_df
+    """
+
     cross_move_pas = []
     for p, pat in enumerate(pats_ids_in):
         pat_pas = []
         for d, day in enumerate(days_tested):
-            pca_manifolds = all_sbjs_pca[p, d, :]
+            cur_manifolds = all_sbjs_pca[p, d, :]
             pas = mu.calc_comp_dim_pas(
-                class_dict, pca_manifolds, freq_red_dim)
+                class_dict, cur_manifolds, freq_red_dim)
             pat_pas.append(pas)
         cross_move_pas.append(pat_pas)
     cross_move_pas = np.array(cross_move_pas)
+
     # make sure to remove rest comparisons
     class_comps = mu.get_pa_comparison_names(class_dict)
     no_rest_class_comps = {comp_key: class_comps[comp_key]
                            for comp_key in class_comps if 'rest' not in class_comps[comp_key]}
-    no_rest_class_comp_inds = [
-        comp_key for comp_key in no_rest_class_comps]
+    no_rest_class_comp_inds = list(no_rest_class_comps.keys())
     no_rest_cross_move_pas = cross_move_pas[:,
                                             :, no_rest_class_comp_inds, :]
     print("Cross_movement final PAs shape:", no_rest_cross_move_pas.shape)
@@ -74,25 +102,65 @@ def cross_day_comps(exp_params,
                     freq_cross_day_bs_pas,
                     freq_cross_day_nd_df,
                     freq_cross_day_lagged_nd_df):
+    """
+    This function calculates the principal angles and also the neural dissimilarity
+    between similar movements on different days in the same participant
+    Adds the principal angles to the freq_cross_day_pas dictionary
+    and the neural dissimilarity info to the freq_cross_day_nd_df dataframe
+    Also adds the lagged comparisons to the freq_cross_day_lagged_nd_df dataframe
+
+    Args:
+        exp_params (dict): the experiment parameters as a dictionary (from json)
+        all_sbjs_pca (np.ndarray): numpy array containing the PCA objects for all data dims
+        proj_mat_sp (str): place where data was saved, use for loading bootstrapped data
+        freq_red_dim (int): cutoff dimensionality for PCA
+        freq_band (str): name of the current frequency band
+        pats_ids_in (list): list of participant ids
+        days_tested (list): list of the days in the dataset
+        class_dict (dict): dictionary mapping movement names to movement numbers
+        cross_days_null_data_pa (np.ndarray): array containing all the principal angles between null data PCA spaces
+        freq_cross_day_pas (dict): dict which holds the principal angles for all freq bands, key is the freq band
+        freq_cross_day_bs_pas (dict): dict which holds the bootstrapped principal angles for all freq bands, key is the freq band
+        freq_cross_day_nd_df (pd.DataFrame): Dataframe containing the neural dissimilarity info for all freq bands
+        freq_cross_day_lagged_nd_df (pd.DataFrame): Dataframe containing the lagged neural dissimilarity info for all freq bands
+
+    Returns:
+        dict: the updated freq_cross_day_pas
+        dict: the updated freq_cross_day_bs_pas
+        pd.DataFrame: the updated freq_cross_day_nd_df
+        pd.DataFrame: the updated freq_cross_day_lagged_nd_df
+    """
+
     # ultimately need to get PAs as shape (sbjs, movements, day comps, reduced dim)
+    # originally (sbj, day, mvmt)
+    # turn into (sbj, mvmt, day)
     all_pca = all_sbjs_pca.transpose((0, 2, 1))
     cross_days_pas = []
     for p, pat in enumerate(pats_ids_in):
         pat_pas = []
         for m, mvmt in enumerate(class_dict):
-            pca_manifolds = all_sbjs_pca[p, m, :]
+            # # avoid adding in rest data
+            # if class_dict[mvmt] != "rest":
+            cur_manifolds = all_sbjs_pca[p, m, :]
             pas = mu.calc_comp_dim_pas(
-                days_tested, pca_manifolds, freq_red_dim)
+                days_tested, cur_manifolds, freq_red_dim)
             pat_pas.append(pas)
         cross_days_pas.append(pat_pas)
     cross_days_pas = np.array(cross_days_pas)
-    freq_cross_day_pas[freq_band] = cross_days_pas
+    # remove the rest data
+    if class_dict[0] == "rest":
+        no_rest_ind = [key for key, val in class_dict.items() if val != "rest"]
+        no_rest_cross_days_pas = cross_days_pas[:, no_rest_ind, :, :]
+    else:
+        no_rest_cross_days_pas = cross_days_pas
+    print("Cross-days final PAs shape:", no_rest_cross_days_pas.shape)
+    freq_cross_day_pas[freq_band] = no_rest_cross_days_pas
 
     # fantastic, now can start the DF
     # the dataframe will have the following columns:
     # 1) frequency band
-    # 2) Movement
-    # 3) subject id
+    # 2) subject id
+    # 3) Movement
     # 4) Day Comparison
     # 4) Summed PA
     summed_pas = []
@@ -103,7 +171,6 @@ def cross_day_comps(exp_params,
     for s, cur_sbj in enumerate(pats_ids_in):
         for m, cur_mvmt in enumerate(class_dict):
             for c, cur_comp in enumerate(comp_names):
-                # print(f, s, c)
                 summed_pas.append(
                     [freq_band, cur_sbj, class_dict[cur_mvmt], comp_names[c], cur_norm_pa[s][m][c]])
 
@@ -129,9 +196,17 @@ def cross_day_comps(exp_params,
                 pat_bs_pas.append(mvmt_bs_pas)
             cross_days_bs_pas.append(pat_bs_pas)
         cross_days_bs_pas = np.array(cross_days_bs_pas)
+        # remove the rest data
+        if class_dict[0] == "rest":
+            no_rest_ind = [key for key,
+                           val in class_dict.items() if val != "rest"]
+            no_rest_cross_days_bs_pas = cross_days_bs_pas[:, no_rest_ind, :, :]
+        else:
+            no_rest_cross_days_bs_pas = cross_days_bs_pas
+        # should be of shape (sbjs, movements, days, bootstrap samps comps, reduced dim)
         print("Cross-days bootstrapped PAs shape:",
-              cross_days_bs_pas.shape)
-        freq_cross_day_bs_pas[freq_band] = cross_days_bs_pas
+              no_rest_cross_days_bs_pas.shape)
+        freq_cross_day_bs_pas[freq_band] = no_rest_cross_days_bs_pas
 
         # add bootstrap to DF
         for s, pat_id_curr in enumerate(pats_ids_in):
@@ -198,30 +273,31 @@ def cross_day_comps(exp_params,
 
     day_comps = nd_df["Day Comparison"].unique()
     lag_across_days = []
+    cur_classes = [val for key, val in class_dict.items() if val != 'rest']
     for p, pat_id_curr in enumerate(pats_ids_in):
-        for m, mvmt in enumerate(['left', 'down', 'right', 'up']):
+        for m, mvmt in enumerate(cur_classes):
             for d, day in enumerate(day_comps):
                 cur_data = nd_df[(nd_df["Frequency"] == freq_band)
                                  & (nd_df["Participant"] == pat_id_curr)
                                  & (nd_df["Movement"] == mvmt)
                                  & (nd_df["Day Comparison"] == day)]["Neural Dissimilarity"].values
 
-                for d in cur_data:
+                for nd in cur_data:
                     if day in zero_days:
                         lag_across_days.append(
-                            [freq_band, pat_id_curr, mvmt, 0, d])
+                            [freq_band, pat_id_curr, mvmt, 0, nd])
                     elif day in one_days:
                         lag_across_days.append(
-                            [freq_band, pat_id_curr, mvmt, 1, d])
+                            [freq_band, pat_id_curr, mvmt, 1, nd])
                     elif day in two_days:
                         lag_across_days.append(
-                            [freq_band, pat_id_curr, mvmt, 2, d])
+                            [freq_band, pat_id_curr, mvmt, 2, nd])
                     elif day in three_days:
                         lag_across_days.append(
-                            [freq_band, pat_id_curr, mvmt, 3, d])
+                            [freq_band, pat_id_curr, mvmt, 3, nd])
                     elif day in four_days:
                         lag_across_days.append(
-                            [freq_band, pat_id_curr, mvmt, 4, d])
+                            [freq_band, pat_id_curr, mvmt, 4, nd])
 
     lag_across_days_df = pd.DataFrame(lag_across_days, columns=['Frequency',
                                                                 'Participant',
@@ -277,10 +353,15 @@ def cross_pat_comps(exp_params,
         if comp_first_sbj != comp_second_sbj:
             keep_inds.append(k)
     cross_pat_pas = cross_pat_pas[:, keep_inds, :]
-
-    print("Cross-Pat final PAs shape:", cross_pat_pas.shape)
+    # remove rest data too
+    if class_dict[0] == "rest":
+        no_rest_ind = [key for key, val in class_dict.items() if val != "rest"]
+        no_rest_cross_pat_pas = cross_pat_pas[no_rest_ind, ...]
+    else:
+        no_rest_cross_pat_pas = cross_pat_pas
+    print("Cross-Pat final PAs shape:", no_rest_cross_pat_pas.shape)
     # cross_pat_pa of shape (movement, sbj*day comps, reduced dim)
-    freq_cross_pat_pas[freq_band] = cross_pat_pas
+    freq_cross_pat_pas[freq_band] = no_rest_cross_pat_pas
 
     # now make the dataframe
     # need the electrode overlap as one of the columns
@@ -305,6 +386,7 @@ def cross_pat_comps(exp_params,
             sbj_comp = comp_first_sbj + " vs " + comp_second_sbj
             if comp_first_sbj != comp_second_sbj:
                 # actually add to DF then
+                # do this because we already removed same subject comparisons
                 cur_nd = [freq_band,
                           class_dict[mvmt],
                           sbj_comp,
@@ -372,10 +454,8 @@ def main():
     else:
         class_dict = {int(cur_key) - 1: val for cur_key,
                       val in class_dict.items()}
-
-    class_color = exp_params["class_color"]
-    class_color = {int(cur_key): val for cur_key, val in class_color.items()}
     pats_ids_in = exp_params["pats_ids_in"]
+    days_tested = exp_params["test_day"]
 
     proj_mat_sp = (
         exp_params["sp"] + exp_params["dataset"] +
@@ -386,27 +466,20 @@ def main():
 
     null_data_sp = exp_params["null_data_lp"]
     print(null_data_sp)
-
-    days_tested = exp_params["test_day"]
-
     null_data_pa = np.load(
         exp_params['null_data_lp'] + 'TME_null_pas.npy', allow_pickle=True)
-
     if len(days_tested) > 1:
         cross_days_null_data_pa = np.load(
             exp_params['cross_days_null_pa_lp'] + 'TME_null_pas.npy', allow_pickle=True)
-
     cross_pat_null_data_pa = np.load(
         exp_params['cross_pat_null_pa_lp'] + 'TME_null_pas', allow_pickle=True)
 
     freq_cross_move_pas = {}
     freq_cross_move_nd_df = pd.DataFrame()
-
     freq_cross_day_pas = {}
     freq_cross_day_bs_pas = {}
     freq_cross_day_nd_df = pd.DataFrame()
     freq_cross_day_lagged_nd_df = pd.DataFrame()
-
     freq_cross_pat_pas = {}
     freq_cross_pat_nd_df = pd.DataFrame()
 
