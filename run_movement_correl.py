@@ -338,65 +338,65 @@ def line_line_angle(jj_orient):
     return angle_mat
 
 
-def calc_pairwise_pose_dist(pose_data, subset, dist_fn_name=stats.pearsonr):
-    """
-    Calculate pairwise distance between all poses in the dataset
-    """
-    n_poses = pose_data.shape[0]
-    pose_dist_mat = np.zeros((n_poses, n_poses))
-    for i in tqdm(range(n_poses)):
-        for j in range(n_poses):
-            pose_i = pose_data[i, :]
-            pose_j = pose_data[j, :]
+# def calc_pairwise_pose_dist(pose_data, subset, dist_fn_name=stats.pearsonr):
+#     """
+#     Calculate pairwise distance between all poses in the dataset
+#     """
+#     n_poses = pose_data.shape[0]
+#     pose_dist_mat = np.zeros((n_poses, n_poses))
+#     for i in tqdm(range(n_poses)):
+#         for j in range(n_poses):
+#             pose_i = pose_data[i, :]
+#             pose_j = pose_data[j, :]
 
-            if dist_fn_name == scipy.spatial.distance.mahalanobis:
-                v1 = np.cov(pose_data.reshape(n_poses, -1), rowvar=False)
-                v1 = np.linalg.inv(v1)
-                dist = dist_fn_name(
-                    pose_i.flatten(), pose_j.flatten(), v1)
+#             if dist_fn_name == scipy.spatial.distance.mahalanobis:
+#                 v1 = np.cov(pose_data.reshape(n_poses, -1), rowvar=False)
+#                 v1 = np.linalg.inv(v1)
+#                 dist = dist_fn_name(
+#                     pose_i.flatten(), pose_j.flatten(), v1)
 
-            elif dist_fn_name == percentage_correct_parts:
-                dist = dist_fn_name(
-                    pose_i, pose_j, subset
-                )
-            elif dist_fn_name == percentage_detected_joints:
-                dist = dist_fn_name(
-                    pose_i, pose_j, subset
-                )
-            elif dist_fn_name == percentage_key_points:
-                dist = dist_fn_name(
-                    pose_i, pose_j, subset
-                )
-            elif dist_fn_name == wrap_oks:
-                dist = dist_fn_name(
-                    pose_i, pose_j
-                )
-            elif dist_fn_name == mean_joint_angle_error:
-                dist = dist_fn_name(
-                    pose_i, pose_j, subset
-                )
-            elif dist_fn_name == joint_angle_dtw:
-                dist = dist_fn_name(
-                    pose_i, pose_j, subset
-                )
-            else:
-                try:
-                    # print("Need to flatten data for " + str(dist_fn_name))
-                    dist = dist_fn_name(
-                        pose_i.flatten(), pose_j.flatten()
-                    )
-                except:
-                    dist = dist_fn_name(
-                        pose_i.reshape(1, -1), pose_j.reshape(1, -1)
-                    )
+#             elif dist_fn_name == percentage_correct_parts:
+#                 dist = dist_fn_name(
+#                     pose_i, pose_j, subset
+#                 )
+#             elif dist_fn_name == percentage_detected_joints:
+#                 dist = dist_fn_name(
+#                     pose_i, pose_j, subset
+#                 )
+#             elif dist_fn_name == percentage_key_points:
+#                 dist = dist_fn_name(
+#                     pose_i, pose_j, subset
+#                 )
+#             elif dist_fn_name == wrap_oks:
+#                 dist = dist_fn_name(
+#                     pose_i, pose_j
+#                 )
+#             elif dist_fn_name == mean_joint_angle_error:
+#                 dist = dist_fn_name(
+#                     pose_i, pose_j, subset
+#                 )
+#             elif dist_fn_name == joint_angle_dtw:
+#                 dist = dist_fn_name(
+#                     pose_i, pose_j, subset
+#                 )
+#             else:
+#                 try:
+#                     # print("Need to flatten data for " + str(dist_fn_name))
+#                     dist = dist_fn_name(
+#                         pose_i.flatten(), pose_j.flatten()
+#                     )
+#                 except:
+#                     dist = dist_fn_name(
+#                         pose_i.reshape(1, -1), pose_j.reshape(1, -1)
+#                     )
 
-            try:
-                pose_dist_mat[i, j] = dist[0]
-            except:
-                # else:
-                pose_dist_mat[i, j] = dist
+#             try:
+#                 pose_dist_mat[i, j] = dist[0]
+#             except:
+#                 # else:
+#                 pose_dist_mat[i, j] = dist
 
-    return pose_dist_mat
+#     return pose_dist_mat
 
 
 def pose_ll_angles(cur_sbj_pose_data):
@@ -462,7 +462,6 @@ def bootstrap_pose_data(split_sbj_joint_angles, cur_classes, per_class_boot_inds
     pose_bootstrap_data = []
     for c, cur_class in enumerate(cur_classes):
         cur_class_data = split_sbj_joint_angles[c]
-        np.random.shuffle(cur_class_data)
         cur_class_data = cur_class_data[per_class_boot_inds[c], :, :]
         pose_bootstrap_data.append(cur_class_data)
 
@@ -509,10 +508,11 @@ def preprocess_pose(pose_data, pat_id_curr, class_dict, pose_exp_params):
     if pose_exp_params["feature_type"] == "exp_pose":
         labels = pose_data.sbj_y_test
     else:
-        print("Extracting angles")
-        pose_joint_angles = pose_ll_angles(pose_data.sbj_X_test)
-        print(pose_joint_angles.shape)
-        pose_data.sbj_X_test = pose_joint_angles
+        # going to try not extracting angles this time
+        # print("Extracting angles")
+        # pose_joint_angles = pose_ll_angles(pose_data.sbj_X_test)
+        # print(pose_joint_angles.shape)
+        # pose_data.sbj_X_test = pose_joint_angles
 
         # convert labels to ints first
         labels = np.array(pose_data.sbj_y_test[:, 0], dtype=int)
@@ -526,7 +526,7 @@ def preprocess_pose(pose_data, pat_id_curr, class_dict, pose_exp_params):
     return split_sbj_joint_angles, cur_classes
 
 
-def preprocess_ecog(ecog_data, pat_curr, sbj_sp, freq_bands, freq_name, class_dict):
+def preprocess_ecog(ecog_data, pat_curr, sbj_sp, freq_bands, freq_name, class_dict, ecog_exp_params):
     ecog_data.get_single_sbj(pat_curr)
     envelope_freq_sbj_X_test, cur_freq_sbj_X_test = mu.extract_analytic_signal(
         freq_bands,
@@ -594,20 +594,7 @@ def calc_class_vs_class_pose_dist(pose_class1, pose_class2, dist_fn_name=stats.p
 
 
 def calc_pose_metric(pose_bootstrap_data, class_dict, dist_fn_name):
-    subset = [
-        "L_Ear",
-        "L_Elbow",
-        "L_Shoulder",
-        "L_Wrist",
-        "Nose",
-        "R_Ear",
-        "R_Elbow",
-        "R_Shoulder",
-        "R_Wrist",
-    ]
 
-    # class_metric_avg = {}
-    # class_metric_std = {}
     class_metric_avg = []
     class_metric_std = []
     # for each class combo, calculate the metric
@@ -644,12 +631,20 @@ def main(pose_exp_params, ecog_exp_params):
     ecog_proj_mat_sp = ecog_exp_params["sp"] + \
         ecog_exp_params["dataset"] + ecog_exp_params["experiment_folder"]
     freq_bands = ecog_exp_params["freq_bands"]
+    class_dict = ecog_exp_params["class_dict"]
+    class_dict = {int(cur_key): val for cur_key, val in class_dict.items()}
+
     # NOTE: only doing Beta for right now,
     # will probably need to expand later, if we like this result
     freq_name = 'Beta'
-    freq_dim = 10
-    class_dict = ecog_exp_params["class_dict"]
-    class_dict = {int(cur_key): val for cur_key, val in class_dict.items()}
+    all_sbjs_pca = np.load(ecog_proj_mat_sp + freq_name +
+                           "_pca_objects.npy", allow_pickle=True)
+    freq_dim = mu.choose_one_freq_dimensionality(class_dict,
+                                                 freq_name,
+                                                 pats_ids_in,
+                                                 np.expand_dims(
+                                                     all_sbjs_pca, axis=0)
+                                                 )
 
     subset = ["L_Ear", "L_Elbow", "L_Shoulder",  "L_Wrist",
               "Nose", "R_Ear", "R_Elbow", "R_Shoulder", "R_Wrist"]
@@ -658,7 +653,7 @@ def main(pose_exp_params, ecog_exp_params):
     pose_data = load_pose_data(pose_exp_params)
     # get ecog data
     if type(ecog_exp_params["test_day"]) == list:
-        ecog_exp_params["test_day"] = "last"
+        ecog_exp_params["test_day"] = "all"
     ecog_data = ECoG_Data(ecog_exp_params, ecog_proj_mat_sp)
     if ecog_exp_params["rois"]:
         ecog_data.X_test = mu.roi_proj(
@@ -683,7 +678,7 @@ def main(pose_exp_params, ecog_exp_params):
             split_sbj_joint_angles, cur_classes = preprocess_pose(
                 pose_data, pat_id_curr, class_dict, pose_exp_params)
             split_sbj_eLFO_ECoG_data, cur_classes = preprocess_ecog(
-                ecog_data, pat_id_curr, sbj_sp, freq_bands, freq_name, class_dict)
+                ecog_data, pat_id_curr, sbj_sp, freq_bands, freq_name, class_dict, ecog_exp_params)
 
             cur_sbjs_pca = []
             cur_sbjs_metric_avg = []
@@ -731,6 +726,7 @@ def main(pose_exp_params, ecog_exp_params):
         pa_df = pa_df.rename(
             columns={'Frequency': 'Participant', 'Participant': 'Bootstrap Iteration'})
         pa_df['Frequency'] = [freq_name for i in range(len(pa_df))]
+        # making assumption that the ecog and pose data match up
         pa_df['Pose Distance'] = np.array(all_bootstrap_metric_avg).flatten()
         pa_df['Pose Distance Std'] = np.array(
             all_bootstrap_metric_std).flatten()
