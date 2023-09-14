@@ -7,8 +7,8 @@ echo "-------------------"
 exp_ecog_file=$1
 exp_pose_file=$2
 
-echo "Running NAT results with ECoG as: $exp_ecog_file"
-echo "Running NAT results with Pose as: $exp_pose_file"
+echo "Running EXP results with ECoG as: $exp_ecog_file"
+echo "Running EXP results with Pose as: $exp_pose_file"
 
 # should I include TME eventually?
 
