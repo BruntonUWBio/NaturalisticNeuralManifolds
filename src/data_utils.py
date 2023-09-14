@@ -2,23 +2,13 @@
 import numpy as np
 import pandas as pd
 import xarray as xr
-import mne
-from scipy.signal import butter, sosfiltfilt, welch, hilbert
-import scipy.io
-from sklearn.feature_selection import mutual_info_regression
-import pickle
-import glob
-import random
-import natsort
 import pdb
 from tqdm import tqdm
-from tensorflow.keras import utils as np_utils
-import sys
-import os
-
 
 # Some refactored code based on code from Dimi and Steve
 # https://github.com/zoeis52/ECoG-hypernets/commit/c490c7336239a90c230260ab5469611f29d53fac
+
+
 class ECoG_Data:
     """
     Holds all of the ECoG data for all subjects and generates the data for different folds and models
@@ -35,7 +25,7 @@ class ECoG_Data:
     ecog_srate: only needed for frequency sliding computation in neural net
     custom_roi_inds: indicies for custom rois from precentral, postcentral, and inf parietal (AAL2)
     proj_mat_out: mapping from ecog electrodes to ROIs for each
-        subject based on radial basis function interpolation
+        subject based on radialx basis function interpolation
     good_ROIs: ROIs that ecog data will be projected to
     nROIs: number of ROIs that ecog is projected to
     X: raw ecog data
