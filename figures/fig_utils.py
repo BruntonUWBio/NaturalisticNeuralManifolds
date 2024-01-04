@@ -271,6 +271,7 @@ def plot_roi_contribs(ax,
         node_size=node_size,
         display_mode=side_2_display,
         axes=ax,
+        node_cmap='viridis',
         node_kwargs={
             "alpha": alpha,
             "edgecolors": edgecolors,
